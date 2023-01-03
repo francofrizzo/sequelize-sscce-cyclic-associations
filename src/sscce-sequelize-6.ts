@@ -1,10 +1,10 @@
-import { DataTypes, Model } from 'sequelize';
-import { createSequelize6Instance } from '../setup/create-sequelize-instance';
-import { expect } from 'chai';
-import sinon from 'sinon';
+import { DataTypes, Model } from "sequelize";
+import { createSequelize6Instance } from "../setup/create-sequelize-instance";
+import { expect } from "chai";
+import sinon from "sinon";
 
 // if your issue is dialect specific, remove the dialects you don't need to test on.
-export const testingOnDialects = new Set(['mssql', 'sqlite', 'mysql', 'mariadb', 'postgres', 'postgres-native']);
+export const testingOnDialects = new Set(["postgres"]);
 
 // You can delete this file if you don't want your SSCCE to be tested against Sequelize 6
 
@@ -23,12 +23,30 @@ export async function run() {
 
   class Foo extends Model {}
 
-  Foo.init({
-    name: DataTypes.TEXT,
-  }, {
-    sequelize,
-    modelName: 'Foo',
-  });
+  Foo.init(
+    {
+      test: DataTypes.ENUM("a", "b", "c"),
+    },
+    {
+      sequelize,
+      modelName: "Foo",
+    }
+  );
+
+  class Bar extends Model {}
+
+  Bar.init(
+    {
+      test: DataTypes.ENUM("a", "b", "c"),
+    },
+    {
+      sequelize,
+      modelName: "Bar",
+    }
+  );
+
+  Foo.belongsTo(Bar);
+  Bar.belongsTo(Foo);
 
   // You can use sinon and chai assertions directly in your SSCCE.
   const spy = sinon.spy();
@@ -36,6 +54,6 @@ export async function run() {
   await sequelize.sync({ force: true });
   expect(spy).to.have.been.called;
 
-  console.log(await Foo.create({ name: 'TS foo' }));
+  console.log(await Foo.create({ name: "TS foo" }));
   expect(await Foo.count()).to.equal(1);
 }
